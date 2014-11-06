@@ -78,7 +78,7 @@ def rustify_type(node):
     elif canonical_kind == clang_types.FUNCTIONPROTO:
         return rustify_function_prototype(node)
     elif canonical_kind == clang_types.INCOMPLETEARRAY:
-         return 'libc::c_int /* INCOMPLETEARRAY /*'
+         return 'libc::c_int /* INCOMPLETEARRAY */'
     elif canonical_kind in mapping:
         return mapping[canonical_kind]
     else:
