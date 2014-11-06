@@ -41,10 +41,10 @@ def rustify_pointer(node):
     if canonical_pointee.kind == clang_types.FUNCTIONPROTO:
         return rustify_function_pointer(node)
     else:
-        if canonical.is_const_qualified():
-           return '*mut ' + rustify_type(canonical_pointee)
-        else:
+        if canonical_pointee.is_const_qualified():
            return '*const ' + rustify_type(canonical_pointee)
+        else:
+           return '*mut ' + rustify_type(canonical_pointee)
 
 
 def rustify_function_prototype(node):
