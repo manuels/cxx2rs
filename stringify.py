@@ -31,7 +31,7 @@ def stringify_function_declaration(node):
 
 def stringify_struct_declaration(node):
     node = node.type.get_declaration()
-    res = "struct %s [%s]\n" % (node.spelling, node.type.spelling)
+    res = "struct %s\n" % node.spelling
     for c in node.get_children():
         res += "\t%s\n" % stringify_variable_declaration(c)
     return res

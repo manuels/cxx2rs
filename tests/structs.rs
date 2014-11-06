@@ -20,7 +20,7 @@ extern "C" {
 
 
 /*
-struct my_struct [struct my_struct]
+struct my_struct
 		int a
 		char * rw
 		const char * ro
