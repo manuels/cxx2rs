@@ -17,12 +17,12 @@ def run_test(fname_cxx):
 	diff = difflib.unified_diff(actual_output, expected_output)
 	for line in diff:
 		if not different:
-			print '================ "%s" test failed. diff begin ================' % os.path.basename(fname_cxx)
+			print '================ "%s" test FAILED! diff begin ================' % os.path.basename(fname_cxx)
 			different = True
 		print line
 
 	if different:
-		print '================  "%s" test failed. diff end  ================' % os.path.basename(fname_cxx)
+		print '================  "%s" test FAILED! diff end  ================' % os.path.basename(fname_cxx)
 		print
 	else:
 		print 'Test "%s" succeeded.' % os.path.basename(fname_cxx)
