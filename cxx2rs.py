@@ -15,8 +15,13 @@ extern crate libc;
 
 def main():
     index = clang.cindex.Index.create()
-    link_name = sys.argv[1]
-    tu = index.parse(sys.argv[2])
+
+    if len(sys.argv) == 2:
+        link_name = None
+        tu = index.parse(sys.argv[1])
+    else:
+        link_name = sys.argv[1]
+        tu = index.parse(sys.argv[2])
 
     print header
 
@@ -30,4 +35,5 @@ def main():
         print rustify_struct_declaration(struct)
 
 
-main()
+if __name__ == "__main__":
+    main()
