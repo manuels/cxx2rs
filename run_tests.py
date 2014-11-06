@@ -10,7 +10,7 @@ def run_test(fname_cxx):
 	with open(fname_rs) as f:
 		expected_output = f.read().split()
 
-	cmd = ['./cxx2rs.py', fname_cxx]
+	cmd = ['./cxx2rs.py', 'cxx', fname_cxx]
 	actual_output = subprocess.check_output(cmd).split()
 	
 	different = False
@@ -23,9 +23,21 @@ def run_test(fname_cxx):
 
 	if different:
 		print '================  "%s" test FAILED! diff end  ================' % os.path.basename(fname_cxx)
-		print
-	else:
+
+	success = False
+	if not different or True:
+		cmd = 'gcc -c %s -o /tmp/cxx.o' % fname_cxx
+		print subprocess.check_output(cmd.split())
+
+		cmd = 'rustc -A dead-code -o /tmp/rs.a %s --crate-type=lib' % fname_rs
+		print subprocess.check_output(cmd.split())
+
+		success = True
+
+	if success:
 		print 'Test "%s" succeeded.' % os.path.basename(fname_cxx)
+	else:
+		print
 
 
 def main():

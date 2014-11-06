@@ -61,12 +61,13 @@ def rustify_function_prototype(node):
 def rustify_type(node):
     clang_types = clang.cindex.TypeKind
     mapping = {
-        clang_types.INT: 'libc::c_int',
+        clang_types.INT:    'libc::c_int',
         clang_types.CHAR_S: 'libc::c_char',
         clang_types.CHAR_U: 'libc::c_uchar',
-        clang_types.VOID: 'libc::c_void',
-        clang_types.LONG: 'libc::c_long',
-        clang_types.ENUM: 'libc::c_uint',
+        clang_types.VOID:   'libc::c_void',
+        clang_types.LONG:   'libc::c_long',
+        clang_types.ULONG:  'libc::c_ulong',
+        clang_types.ENUM:   'libc::c_uint',
     }
 
     canonical = node.get_canonical()
