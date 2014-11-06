@@ -21,12 +21,12 @@ def main():
     print header
 
     for func in get_functions(tu.cursor, tu.spelling):
-        print "/*%s*/" % stringify_function_declaration(func)
+        print "/*\n%s*/" % stringify_function_declaration(func)
         print rustify_function_declaration(func, link_name)
         print
 
     for struct in get_structs(tu.cursor, tu.spelling):
-        print "/*%s*/" % stringify_struct_declaration(struct)
+        print "/*\n%s*/" % stringify_struct_declaration(struct)
         print rustify_struct_declaration(struct)
 
 

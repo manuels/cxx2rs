@@ -17,7 +17,6 @@ def get_nodes(node, filename, kind_list):
             for node in get_nodes(c, filename, kind_list):
                 yield node
     else:
-
         if node.location.file is not None:
             path = os.path.dirname(filename)
             fname = os.path.dirname(str(node.location.file))

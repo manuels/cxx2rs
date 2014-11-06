@@ -94,7 +94,7 @@ def rustify_function_declaration(node, link_name=None):
     if node.result_type.get_canonical().kind is not clang.cindex.TypeKind.VOID:
         res += ' -> %s' % rustify_type(node.result_type.get_canonical())
 
-    res = 'extern "C" {\n\t%s;\n\t}\n' % res
+    res = 'extern "C" {\n\t%s;\n}\n' % res
     if link_name is not None:
         res = '#[link(name="%s")]\n%s' % (link_name, res)
 
