@@ -3,6 +3,8 @@ clang.cindex.Config.set_library_file('/usr/lib/x86_64-linux-gnu/libclang-3.5.so.
 
 import os.path
 
+#from stringify import *
+
 link_name = None
 
 def get_nodes(node, filename, kind_list):
@@ -25,6 +27,19 @@ def get_nodes(node, filename, kind_list):
             if is_in_dir:
                 yield node
 
+def get_function_arg_structs(all_functions):
+    clang_types = clang.cindex.TypeKind
+
+    is_struct = lambda arg: arg.get_canonical().get_pointee().get_canonical().kind is clang_types.RECORD
+    get_struct_args = lambda fn: filter(is_struct, fn.type.argument_types())
+
+    structs = map(get_struct_args, all_functions)
+    structs = reduce(list.__add__, structs, [])
+
+    structs = map(lambda n: n.get_pointee().get_declaration(), structs)
+
+    return structs
+
 
 def get_functions(node, filename):
     kind_list = [clang.cindex.CursorKind.FUNCTION_DECL, clang.cindex.CursorKind.CXX_METHOD]
@@ -43,6 +58,17 @@ def get_structs(node, filename):
             res.append(s)
     return res
 
+def get_typedefs(node, filename):
+    kind_list = [clang.cindex.CursorKind.TYPEDEF_DECL]
+    
+    nodes = get_nodes(node, filename, kind_list)
+    typedefs = map(lambda n: n.type.get_declaration(), nodes)
+
+    res = []
+    for t in typedefs:
+        if t not in res:
+            res.append(t)
+    return res
 
 def parent_path(node):
     parent = node.semantic_parent

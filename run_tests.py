@@ -5,17 +5,11 @@ import glob
 import subprocess
 import difflib
 
-def run_test(fname_cxx):
-	fname_rs = os.path.splitext(fname_cxx)[0] + ".rs"
-	with open(fname_rs) as f:
-		expected_output = f.read().split()
+def diff(fname_cxx, actual_output, expected_output):
+	diff_lines = difflib.unified_diff(actual_output, expected_output)
 
-	cmd = ['./cxx2rs.py', 'cxx', fname_cxx]
-	actual_output = subprocess.check_output(cmd).split()
-	
 	different = False
-	diff = difflib.unified_diff(actual_output, expected_output)
-	for line in diff:
+	for line in diff_lines:
 		if not different:
 			print '================ "%s" test FAILED! diff begin ================' % os.path.basename(fname_cxx)
 			different = True
@@ -24,15 +18,44 @@ def run_test(fname_cxx):
 	if different:
 		print '================  "%s" test FAILED! diff end  ================' % os.path.basename(fname_cxx)
 
-	success = False
-	if not different or True:
-		cmd = 'gcc -c %s -o /tmp/cxx.o' % fname_cxx
+	return not different
+
+
+def compile(fname_cxx, fname_rs, fname_run_rs):
+	cmd = 'gcc -c %s -o /tmp/libcxx.a' % fname_cxx
+	cmd = 'clang -c %s -o /tmp/libcxx.a' % fname_cxx
+	print cmd
+	print subprocess.check_output(cmd.split())
+
+	cmd = 'rustc -o /tmp/libfoo.rlib %s' % fname_rs
+	print cmd
+	print subprocess.check_output(cmd.split())
+
+	if fname_run_rs is not None:
+		cmd = 'rustc -L /tmp/ %s -o /tmp/main' % fname_run_rs
+		print cmd
 		print subprocess.check_output(cmd.split())
 
-		cmd = 'rustc -A dead-code -o /tmp/rs.a %s --crate-type=lib' % fname_rs
-		print subprocess.check_output(cmd.split())
+	success = True
 
-		success = True
+
+def run_test(fname_cxx):
+	fname_run_rs = os.path.splitext(fname_cxx)[0] + "_run.rs"
+	if not os.path.exists(fname_run_rs):
+		fname_run_rs = None
+
+	fname_rs = os.path.splitext(fname_cxx)[0] + ".rs"
+	with open(fname_rs) as f:
+		expected_output = f.read().split()
+
+	cmd = ['./cxx2rs.py', 'cxx', fname_cxx]
+	actual_output = subprocess.check_output(cmd).split()
+	
+	success = diff(fname_cxx, actual_output, expected_output)
+	print fname_run_rs, success
+	
+	if success:
+		success = compile(fname_cxx, fname_rs, fname_run_rs)
 
 	if success:
 		print 'Test "%s" succeeded.' % os.path.basename(fname_cxx)

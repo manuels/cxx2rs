@@ -4,7 +4,7 @@ import re
 from parser import *
 
 def rustify_variable_declaration(node):
-    keywords = ['priv', 'loop', 'ref', 'in', 'type']
+    keywords = ['priv', 'loop', 'ref', 'in', 'type', 'where']
 
     name = node.spelling
     while name in keywords:
@@ -12,8 +12,8 @@ def rustify_variable_declaration(node):
 
     return "%s: %s" % (
             name,
-            rustify_type(node.type))
-#            rustify_type(node.type.get_canonical()))
+#            rustify_type(node.type))
+            rustify_type(node.type.get_canonical()))
 
 
 def rustify_function_pointer(node):
@@ -27,8 +27,8 @@ def rustify_function_pointer(node):
     args = ", ".join(map(rustify_type, canonical_pointee.argument_types()))
     res = 'extern fn(%s)' % args
 
-    if node.get_result().get_canonical().kind not in [clang_types.VOID, clang_types.INVALID]:
-        res += " -> %s" % rustify_type(node.get_result().get_canonical())
+    if canonical_pointee.get_result().get_canonical().kind not in [clang_types.VOID, clang_types.INVALID]:
+        res += " -> %s" % rustify_type(canonical_pointee.get_result().get_canonical())
     return res
 
 
@@ -62,8 +62,10 @@ def rustify_type(node):
     clang_types = clang.cindex.TypeKind
     mapping = {
         clang_types.INT:    'libc::c_int',
+        clang_types.UINT:   'libc::c_uint',
         clang_types.CHAR_S: 'libc::c_char',
         clang_types.CHAR_U: 'libc::c_uchar',
+        clang_types.UCHAR:  'libc::c_uchar',
         clang_types.VOID:   'libc::c_void',
         clang_types.LONG:   'libc::c_long',
         clang_types.ULONG:  'libc::c_ulong',
@@ -79,7 +81,11 @@ def rustify_type(node):
     elif canonical_kind == clang_types.FUNCTIONPROTO:
         return rustify_function_prototype(node)
     elif canonical_kind == clang_types.INCOMPLETEARRAY:
-         return 'libc::c_int /* INCOMPLETEARRAY */'
+        #return 'libc::c_int /* INCOMPLETEARRAY */'
+        return "*mut %s /* INCOMPLETEARRAY */" % rustify_type(canonical.get_array_element_type())
+    elif canonical_kind == clang_types.CONSTANTARRAY:
+        return "[%s, ..%i]" % (rustify_type(canonical.get_array_element_type()),
+                canonical.get_array_size())
     elif canonical_kind in mapping:
         return mapping[canonical_kind]
     else:
@@ -90,7 +96,7 @@ def rustify_type(node):
 def rustify_function_declaration(node, link_name=None):
     args = ", ".join(map(rustify_variable_declaration, node.get_arguments()))
 
-    res = "fn %s(%s)" % (canonical_function_name(node), args)
+    res = "pub fn %s(%s)" % (canonical_function_name(node), args)
 
     if node.result_type.get_canonical().kind is not clang.cindex.TypeKind.VOID:
         res += ' -> %s' % rustify_type(node.result_type.get_canonical())
@@ -103,12 +109,13 @@ def rustify_function_declaration(node, link_name=None):
 
 
 def rustify_struct_declaration(node):
+    canonical = node.type.get_canonical().get_declaration()
     node = node.type.get_declaration()
     res =  "#[repr(C)]\n"
-    res += "struct %s" % node.spelling
+    res += "pub struct %s" % node.spelling
 
     members = " {\n"
-    for c in node.get_children():
+    for c in canonical.get_children():
         members += "\t%s,\n" % rustify_variable_declaration(c)
 
     if len(members) > 3:
