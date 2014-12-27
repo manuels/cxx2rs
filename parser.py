@@ -41,6 +41,15 @@ def get_function_arg_structs(all_functions):
     return structs
 
 
+def get_enums(node, filename):
+    kind_list = [clang.cindex.CursorKind.ENUM_DECL]
+    return get_nodes(node, filename, kind_list)
+
+def get_macros(node, filename):
+    kind_list = [clang.cindex.CursorKind.MACRO_DEFINITION]
+    return get_nodes(node, filename, kind_list)
+
+
 def get_functions(node, filename):
     kind_list = [clang.cindex.CursorKind.FUNCTION_DECL, clang.cindex.CursorKind.CXX_METHOD]
     return get_nodes(node, filename, kind_list)

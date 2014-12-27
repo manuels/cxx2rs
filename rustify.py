@@ -29,7 +29,7 @@ def rustify_function_pointer(node):
 
     if canonical_pointee.get_result().get_canonical().kind not in [clang_types.VOID, clang_types.INVALID]:
         res += " -> %s" % rustify_type(canonical_pointee.get_result().get_canonical())
-    return res
+    return "Option<%s>" % res # nullable
 
 
 def rustify_pointer(node):
@@ -65,6 +65,8 @@ def rustify_type(node):
         clang_types.UINT:   'libc::c_uint',
         clang_types.CHAR_S: 'libc::c_char',
         clang_types.CHAR_U: 'libc::c_uchar',
+        clang_types.SHORT:  'libc::c_short',
+        clang_types.USHORT: 'libc::c_ushort',
         clang_types.UCHAR:  'libc::c_uchar',
         clang_types.VOID:   'libc::c_void',
         clang_types.LONG:   'libc::c_long',
@@ -124,3 +126,47 @@ def rustify_struct_declaration(node):
     else:
         res += ';\n'
     return res
+
+def rustify_enum_declaration(node):
+    if len(node.spelling):
+        all_positive = all(map(lambda c: c.enum_value > -1, node.get_children()))
+
+        if all_positive:
+            typ = ("u32", "libc::c_uint")
+        else:
+            typ = ("i32", "libc::c_int")
+
+        res = "#[deriving(Copy, PartialEq, Show)]\n"
+        res += "#[repr(%s)]\n" % typ[0]
+        res += "pub enum %s {\n" % node.spelling
+        for c in node.get_children():
+            res += "\t%s =\t%i,\n" % (c.spelling, c.enum_value)
+        res += "}\n"
+        res += "\n"
+
+        res += "impl %s {\n" % node.spelling
+        res += '\tpub fn to_%s(&self) -> %s {\n' % (typ[0], typ[1])
+        res += '\t\t*self as %s\n' % typ[1]
+        res += '\t}\n'
+        res += '\n'
+        res += '\tpub fn from_%s(v: %s) -> %s {\n' % (typ[0], typ[1], node.spelling)
+        res += '\t\tunsafe { mem::transmute(v) }\n'
+        res += '\t}\n'
+        res += '}\n\n'
+    else:
+        res = ""
+        for c in node.get_children():
+            res += "pub const %s: i32 = %i;\n" % (c.spelling, c.enum_value)
+
+    return res
+
+def rustify_macro_declaration(macro):
+    val = ''.join(map(lambda x: x.spelling, list(macro.get_tokens())[1:-1]))
+
+    for base in [10, 16]:
+        try:
+            return "pub const %s: i32 = %i;\n" % (macro.displayname, int(val,base))
+        except ValueError:
+            pass
+
+    return ""

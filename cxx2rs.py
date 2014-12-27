@@ -13,9 +13,12 @@ import sets
 
 header = """
 #![crate_type = "lib"]
-#![crate_name = "foo"]
+#![crate_name = "ssh"]
 
 extern crate libc;
+use std::mem;
+
+use std::collections::enum_set::CLike;
 
 """
 
@@ -50,10 +53,21 @@ def main():
         print "/*\n%s*/" % stringify_struct_declaration(struct)
         print rustify_struct_declaration(struct)
 
+    all_enums = get_enums(tu.cursor, tu.spelling)
+    for enum in all_enums:
+        print "/*\n%s*/" % stringify_enum_declaration(enum)
+        print rustify_enum_declaration(enum)
+
+    all_macros = get_macros(tu.cursor, tu.spelling)
+    for m in all_macros:
+        print "/* %s */" % stringify_macro_declaration(m)
+        print rustify_macro_declaration(m)
+
+"""
     get_arguments = lambda arg: arg._tu
     all_args = map(lambda fn: map(get_arguments, fn.get_arguments()), get_functions(tu.cursor, tu.spelling))
     #print set(reduce(lambda a,b: a+b, all_args))
-
+"""
 
 if __name__ == "__main__":
     main()

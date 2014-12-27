@@ -37,3 +37,16 @@ def stringify_struct_declaration(node):
     for c in canonical.get_children():
         res += "\t%s\n" % stringify_variable_declaration(c)
     return res
+
+def stringify_enum_declaration(node):
+    res = "enum %s {\n" % node.spelling
+    for c in node.get_children():
+        res += "\t%s =\t0x%08X (%i)\n" % (c.spelling, c.enum_value, c.enum_value)
+    res += "}\n"
+
+    return res
+
+def stringify_macro_declaration(node):
+    close_comment = lambda x: x != '*/'
+    #return ' '.join(map(lambda x: x.spelling, node.get_tokens()))
+    return ' '.join(filter(close_comment, map(lambda x: x.spelling, node.get_tokens())))
