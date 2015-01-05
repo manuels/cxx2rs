@@ -86,7 +86,7 @@ def rustify_type(node):
         #return 'libc::c_int /* INCOMPLETEARRAY */'
         return "*mut %s /* INCOMPLETEARRAY */" % rustify_type(canonical.get_array_element_type())
     elif canonical_kind == clang_types.CONSTANTARRAY:
-        return "[%s, ..%i]" % (rustify_type(canonical.get_array_element_type()),
+        return "[%s; %i]" % (rustify_type(canonical.get_array_element_type()),
                 canonical.get_array_size())
     elif canonical_kind in mapping:
         return mapping[canonical_kind]
