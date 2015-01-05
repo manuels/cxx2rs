@@ -15,7 +15,6 @@ def stringify_variable_declaration(node):
 def stringify_function_declaration(node):
     res = ""
 
-    print node.type.get_result().spelling
     if node.result_type.get_canonical() != node.result_type:
         res += "%s %s() [%s]\n" % (
             node.result_type.spelling,
