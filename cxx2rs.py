@@ -32,12 +32,11 @@ def unique(input):
 def main():
     index = clang.cindex.Index.create()
 
-    if len(sys.argv) == 2:
-        link_name = None
-        tu = index.parse(sys.argv[1], options=0x80 | 0x01 | 0x02)
-    else:
-        link_name = sys.argv[1]
-        tu = index.parse(sys.argv[2], options=0x80 | 0x01 | 0x02)
+    args = sys.argv[1:]
+    link_name = args.pop(0)
+    fname = args.pop(0)
+
+    tu = index.parse(fname, args, options=0x80 | 0x01 | 0x02)
 
     print header
 
@@ -47,8 +46,8 @@ def main():
         print rustify_function_declaration(func, link_name)
         print
 
-    all_structs = unique(get_structs(tu.cursor, tu.spelling) + \
-        get_function_arg_structs(all_functions2))
+    all_structs = unique(get_structs(tu.cursor, tu.spelling) +
+                            get_function_arg_structs(all_functions2))
     for struct in all_structs:
         print "/*\n%s*/" % stringify_struct_declaration(struct)
         print rustify_struct_declaration(struct)
