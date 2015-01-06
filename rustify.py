@@ -128,7 +128,11 @@ def rustify_struct_declaration(node):
     return res
 
 def rustify_enum_declaration(node):
-    if len(node.spelling):
+    name = node.spelling
+    if len(name) == 0:
+        name = node.referenced.type.spelling
+
+    if len(name) > 0:
         all_positive = all(map(lambda c: c.enum_value > -1, node.get_children()))
 
         if all_positive:
@@ -136,20 +140,20 @@ def rustify_enum_declaration(node):
         else:
             typ = ("i32", "libc::c_int")
 
-        res = "#[deriving(Copy, PartialEq, Show)]\n"
+        res = "#[derive(Copy, PartialEq, Show)]\n"
         res += "#[repr(%s)]\n" % typ[0]
-        res += "pub enum %s {\n" % node.spelling
+        res += "pub enum %s {\n" % name
         for c in node.get_children():
-            res += "\t%s =\t%i,\n" % (c.spelling, c.enum_value)
+            res += "\t%s =\t%i as %s,\n" % (c.spelling, c.enum_value, typ[0])
         res += "}\n"
         res += "\n"
 
-        res += "impl %s {\n" % node.spelling
+        res += "impl %s {\n" % name
         res += '\tpub fn to_%s(&self) -> %s {\n' % (typ[0], typ[1])
         res += '\t\t*self as %s\n' % typ[1]
         res += '\t}\n'
         res += '\n'
-        res += '\tpub fn from_%s(v: %s) -> %s {\n' % (typ[0], typ[1], node.spelling)
+        res += '\tpub fn from_%s(v: %s) -> %s {\n' % (typ[0], typ[1], name)
         res += '\t\tunsafe { mem::transmute(v) }\n'
         res += '\t}\n'
         res += '}\n\n'
