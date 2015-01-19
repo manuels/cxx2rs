@@ -4,11 +4,13 @@ import re
 from parser import *
 
 def rustify_variable_declaration(node):
-    keywords = ['priv', 'loop', 'ref', 'in', 'type', 'where']
+    keywords = ['priv', 'loop', 'ref', 'in', 'type', 'where', 'impl']
 
     name = node.spelling
     while name in keywords:
         name += "_"
+    if len(name) == 0:
+        name = "_"
 
     return "%s: %s" % (
             name,
@@ -61,17 +63,21 @@ def rustify_function_prototype(node):
 def rustify_type(node):
     clang_types = clang.cindex.TypeKind
     mapping = {
-        clang_types.INT:    'libc::c_int',
-        clang_types.UINT:   'libc::c_uint',
-        clang_types.CHAR_S: 'libc::c_char',
-        clang_types.CHAR_U: 'libc::c_uchar',
-        clang_types.SHORT:  'libc::c_short',
-        clang_types.USHORT: 'libc::c_ushort',
-        clang_types.UCHAR:  'libc::c_uchar',
-        clang_types.VOID:   'libc::c_void',
-        clang_types.LONG:   'libc::c_long',
-        clang_types.ULONG:  'libc::c_ulong',
-        clang_types.ENUM:   'libc::c_uint',
+        clang_types.INT:       'libc::c_int',
+        clang_types.UINT:      'libc::c_uint',
+        clang_types.CHAR_S:    'libc::c_char',
+        clang_types.CHAR_U:    'libc::c_uchar',
+        clang_types.SHORT:     'libc::c_short',
+        clang_types.USHORT:    'libc::c_ushort',
+        clang_types.UCHAR:     'libc::c_uchar',
+        clang_types.VOID:      'libc::c_void',
+        clang_types.LONG:      'libc::c_long',
+        clang_types.ULONG:     'libc::c_ulong',
+        clang_types.ULONGLONG: 'libc::c_ulonglong',
+        clang_types.LONGLONG:  'libc::c_longlong',
+        clang_types.DOUBLE:    'libc::c_double',
+        clang_types.FLOAT:     'libc::c_float',
+        clang_types.ENUM:      'libc::c_uint',
     }
 
     canonical = node.get_canonical()
