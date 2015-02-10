@@ -1,5 +1,6 @@
 import clang.cindex
-clang.cindex.Config.set_library_file('/usr/lib/x86_64-linux-gnu/libclang-3.5.so.1')
+from ctypes.util import find_library
+clang.cindex.Config.set_library_file(find_library('clang'))
 
 import os.path
 
