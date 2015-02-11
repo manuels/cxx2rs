@@ -20,8 +20,6 @@ header = """
 extern crate libc;
 use std::mem;
 
-use std::collections::enum_set::CLike;
-
 """
 
 def unique(input):
@@ -38,21 +36,27 @@ def main():
     link_name = args.pop(0)
     fname = args.pop(0)
 
-    tu = index.parse(fname, args, options=0x80 | 0x01 | 0x02)
+    PARSE_SKIP_FUNCTION_BODIES=64
+    PARSE_DETAILED_PROCESSING_RECORD=1
+    PARSE_INCOMPLETE=2
+
+    options = PARSE_SKIP_FUNCTION_BODIES | PARSE_INCOMPLETE | PARSE_DETAILED_PROCESSING_RECORD
+    tu = index.parse(fname, args, options=options)
 
     print header
 
     all_functions1, all_functions2 = itertools.tee(get_functions(tu.cursor, tu.spelling))
-    for func in all_functions1:
-        print "/*\n%s*/" % stringify_function_declaration(func)
-        print rustify_function_declaration(func, link_name)
-        print
 
     all_structs = unique(get_structs(tu.cursor, tu.spelling) +
-                            get_function_arg_structs(all_functions2))
+                            get_function_arg_structs(all_functions1))
     for struct in all_structs:
         print "/*\n%s*/" % stringify_struct_declaration(struct)
         print rustify_struct_declaration(struct)
+
+    for func in all_functions2:
+        print "/*\n%s*/" % stringify_function_declaration(func)
+        print rustify_function_declaration(func, link_name=link_name)
+        print
 
     all_enums = get_enums(tu.cursor, tu.spelling)
     for enum in all_enums:
