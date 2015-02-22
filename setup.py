@@ -8,10 +8,10 @@ from setuptools import setup, find_packages
 here = os.path.abspath(os.path.dirname(__file__))
 NAME = 'cxx2rs'
 
-with open(os.path.join(here, 'README.md')) as readme:
+with open(os.path.join(here, 'README.rst')) as readme:
     README = readme.read()
 
-with open(os.path.join(here, 'CHANGELOG')) as changes:
+with open(os.path.join(here, 'CHANGES.rst')) as changes:
     CHANGES = changes.read()
 
 with open(os.path.join(here, NAME, '__init__.py')) as version:
