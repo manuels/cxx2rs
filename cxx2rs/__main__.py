@@ -3,6 +3,8 @@
 """
 
 import sys
+import sets
+import itertools
 import clang.cindex
 
 from ctypes.util import find_library
@@ -10,8 +12,6 @@ clang.cindex.Config.set_library_file(find_library('clang'))
 
 from rustify import *
 from stringify import *
-import itertools
-import sets
 
 header = """
 #![crate_type = "lib"]
@@ -29,10 +29,11 @@ def unique(input):
             output.append(el)
     return output
 
-def main():
+def main(args=sys.argv):
+
     index = clang.cindex.Index.create()
 
-    args = sys.argv[1:]
+    args = args[1:]
     link_name = args.pop(0)
     fname = args.pop(0)
 
