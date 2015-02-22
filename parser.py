@@ -83,6 +83,9 @@ def get_typedefs(node, filename):
 def parent_path(node):
     parent = node.semantic_parent
 
+    if parent is None:
+        return []
+
     if parent.spelling is None:
         return []
     else:
