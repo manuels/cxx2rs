@@ -14,10 +14,11 @@ from rustify import *
 from stringify import *
 
 header = """
-#![crate_type = "lib"]
-#![crate_name = "ssh"]
-
 extern crate libc;
+
+#[macro_use]
+extern crate bitflags;
+
 use std::mem;
 
 """

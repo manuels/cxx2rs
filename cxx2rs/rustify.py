@@ -4,7 +4,7 @@ import re
 from parser import *
 
 def rustify_variable_declaration(node):
-    keywords = ['priv', 'loop', 'ref', 'in', 'type', 'where', 'impl', 'self']
+    keywords = ['priv', 'loop', 'ref', 'in', 'type', 'where', 'impl', 'self', 'as', 'pub']
 
     name = node.spelling
     while name in keywords:
@@ -146,23 +146,12 @@ def rustify_enum_declaration(node):
         else:
             typ = ("i32", "libc::c_int")
 
-        res = "#[derive(Copy, PartialEq, Show)]\n"
-        res += "#[repr(%s)]\n" % typ[0]
-        res += "pub enum %s {\n" % name
+        res += "bitflags! {\n" % name
+        res += "\tflags %s: %s {\n" % (name, typ[1])
         for c in node.get_children():
-            res += "\t%s =\t%i as %s,\n" % (c.spelling, c.enum_value, typ[0])
-        res += "}\n"
+            res += "\t\tconst %s =\t%i as %s,\n" % (c.spelling, c.enum_value, typ[1])
+        res += "\t}\n"
         res += "\n"
-
-        res += "impl %s {\n" % name
-        res += '\tpub fn to_%s(&self) -> %s {\n' % (typ[0], typ[1])
-        res += '\t\t*self as %s\n' % typ[1]
-        res += '\t}\n'
-        res += '\n'
-        res += '\tpub fn from_%s(v: %s) -> %s {\n' % (typ[0], typ[1], name)
-        res += '\t\tunsafe { mem::transmute(v) }\n'
-        res += '\t}\n'
-        res += '}\n\n'
     else:
         res = ""
         for c in node.get_children():
