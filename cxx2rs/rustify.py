@@ -4,7 +4,7 @@ import re
 from parser import *
 
 def rustify_variable_declaration(node):
-    keywords = ['priv', 'loop', 'ref', 'in', 'type', 'where', 'impl']
+    keywords = ['priv', 'loop', 'ref', 'in', 'type', 'where', 'impl', 'self']
 
     name = node.spelling
     while name in keywords:
