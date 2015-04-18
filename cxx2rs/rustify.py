@@ -124,7 +124,7 @@ def rustify_struct_declaration(node):
 
     members = " {\n"
     for c in canonical.get_children():
-        members += "\t%s,\n" % rustify_variable_declaration(c)
+        members += "\tpub %s,\n" % rustify_variable_declaration(c)
 
     if len(members) > 3:
         members += "}\n"
@@ -146,11 +146,12 @@ def rustify_enum_declaration(node):
         else:
             typ = ("i32", "libc::c_int")
 
-        res += "bitflags! {\n" % name
+        res = "bitflags! {\n"
         res += "\tflags %s: %s {\n" % (name, typ[1])
         for c in node.get_children():
             res += "\t\tconst %s =\t%i as %s,\n" % (c.spelling, c.enum_value, typ[1])
         res += "\t}\n"
+        res += "}\n"
         res += "\n"
     else:
         res = ""
