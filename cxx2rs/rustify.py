@@ -63,42 +63,49 @@ def rustify_function_prototype(node):
 def rustify_type(node):
     clang_types = clang.cindex.TypeKind
     mapping = {
-        clang_types.INT:       'libc::c_int',
-        clang_types.UINT:      'libc::c_uint',
-        clang_types.CHAR_S:    'libc::c_char',
-        clang_types.CHAR_U:    'libc::c_uchar',
-        clang_types.SHORT:     'libc::c_short',
-        clang_types.USHORT:    'libc::c_ushort',
-        clang_types.UCHAR:     'libc::c_uchar',
-        clang_types.VOID:      'libc::c_void',
-        clang_types.LONG:      'libc::c_long',
-        clang_types.ULONG:     'libc::c_ulong',
-        clang_types.ULONGLONG: 'libc::c_ulonglong',
-        clang_types.LONGLONG:  'libc::c_longlong',
-        clang_types.DOUBLE:    'libc::c_double',
-        clang_types.FLOAT:     'libc::c_float',
-        clang_types.ENUM:      'libc::c_uint',
+        clang_types.INT:        'libc::c_int',
+        clang_types.UINT:       'libc::c_uint',
+        clang_types.CHAR_S:     'libc::c_char',
+        clang_types.CHAR_U:     'libc::c_uchar',
+        clang_types.SHORT:      'libc::c_short',
+        clang_types.USHORT:     'libc::c_ushort',
+        clang_types.SCHAR:      'libc::c_char',
+        clang_types.UCHAR:      'libc::c_uchar',
+        clang_types.VOID:       'libc::c_void',
+        clang_types.LONG:       'libc::c_long',
+        clang_types.ULONG:      'libc::c_ulong',
+        clang_types.ULONGLONG:  'libc::c_ulonglong',
+        clang_types.LONGLONG:   'libc::c_longlong',
+        clang_types.DOUBLE:     'libc::c_double',
+        clang_types.LONGDOUBLE: 'libc::c_double',
+        clang_types.FLOAT:      'libc::c_float',
+        clang_types.ENUM:       'libc::c_uint',
     }
 
     canonical = node.get_canonical()
     canonical_kind = canonical.kind
     if canonical_kind == clang_types.POINTER:
-        return rustify_pointer(node)
+        res = rustify_pointer(node)
     elif canonical_kind is clang_types.RECORD:
-        return re.sub('^struct ', '', re.sub('^const ', '', canonical.spelling))
+        res = re.sub('^struct ', '', re.sub('^const ', '', canonical.spelling))
     elif canonical_kind == clang_types.FUNCTIONPROTO:
-        return rustify_function_prototype(node)
+        res = rustify_function_prototype(node)
     elif canonical_kind == clang_types.INCOMPLETEARRAY:
         #return 'libc::c_int /* INCOMPLETEARRAY */'
-        return "*mut %s /* INCOMPLETEARRAY */" % rustify_type(canonical.get_array_element_type())
+        res = "*mut %s /* INCOMPLETEARRAY */" % rustify_type(canonical.get_array_element_type())
     elif canonical_kind == clang_types.CONSTANTARRAY:
-        return "[%s; %i]" % (rustify_type(canonical.get_array_element_type()),
+        res = "[%s; %i]" % (rustify_type(canonical.get_array_element_type()),
                 canonical.get_array_size())
     elif canonical_kind in mapping:
-        return mapping[canonical_kind]
+        res = mapping[canonical_kind]
     else:
-        #raise Exception("Not implemented: Type=%s" % canonical_kind)
-        return "%s" %   node.get_canonical().kind
+        raise Exception("Not implemented: Type=%s" % canonical_kind)
+        res = "%s" %   node.get_canonical().kind
+
+    if res.startswith('union '):
+        res = res[6:]
+
+    return res
 
 
 def rustify_function_declaration(node, link_name=None):

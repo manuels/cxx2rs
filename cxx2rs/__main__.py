@@ -10,6 +10,7 @@ import clang.cindex
 from ctypes.util import find_library
 clang.cindex.Config.set_library_file(find_library('clang'))
 
+from parser import canonical_function_name
 from rustify import *
 from stringify import *
 
@@ -18,8 +19,6 @@ extern crate libc;
 
 #[macro_use]
 extern crate bitflags;
-
-use std::mem;
 
 """
 
@@ -50,17 +49,25 @@ def main(args=sys.argv):
     all_functions1, all_functions2 = itertools.tee(get_functions(tu.cursor, tu.spelling))
 
     all_structs = unique(get_structs(tu.cursor, tu.spelling) +
-                            get_function_arg_structs(all_functions1))
+                         get_function_arg_structs(all_functions1))
+    all_structs = { struct.spelling: struct for struct in all_structs if len(struct.spelling) > 0 }
+    all_structs = all_structs.values()
+
     for struct in all_structs:
         print "/*\n%s*/" % stringify_struct_declaration(struct)
         print rustify_struct_declaration(struct)
 
+    all_functions2 = {canonical_function_name(func): func for func in all_functions2}
+    all_functions2 = all_functions2.values()
     for func in all_functions2:
         print "/*\n%s*/" % stringify_function_declaration(func)
         print rustify_function_declaration(func, link_name=link_name)
         print
 
     all_enums = get_enums(tu.cursor, tu.spelling)
+    all_enums = { enum.spelling: enum for enum in all_enums }
+    del all_enums['']
+    all_enums = all_enums.values()
     for enum in all_enums:
         print "/*\n%s*/" % stringify_enum_declaration(enum)
         print rustify_enum_declaration(enum)
