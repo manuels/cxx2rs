@@ -66,7 +66,8 @@ def main(args=sys.argv):
 
     all_enums = get_enums(tu.cursor, tu.spelling)
     all_enums = { enum.spelling: enum for enum in all_enums }
-    del all_enums['']
+    if '' in all_enums:
+        del all_enums['']
     all_enums = all_enums.values()
     for enum in all_enums:
         print "/*\n%s*/" % stringify_enum_declaration(enum)
