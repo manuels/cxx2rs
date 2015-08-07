@@ -1,7 +1,7 @@
 cxx2rs
 ======
 
-A rust-binding generator for C/C++ files
+A rust-binding generator for C files
 
 
 Installation:
@@ -22,6 +22,6 @@ Use it like this:
            ^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^
               |        |                                  |                                       |
               |        |                                  compiler args (optional)                rust include file
-              |        C/C++ include file
+              |        C include file
               library name (rust's #[link(name="glib-2.0")]
 
