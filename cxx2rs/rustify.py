@@ -50,9 +50,16 @@ def rustify_pointer(node):
 
 
 def rustify_function_prototype(node):
-    canonical = node.get_canonical()
+    clang_types = clang.cindex.TypeKind
 
-    args = ",".join(map(rustify_type, canonical.argument_types()))
+    canonical = node.get_canonical()
+    canonical_kind = canonical.kind
+
+    args = []
+    if canonical_kind ==  clang_types.FUNCTIONPROTO:
+        args = canonical.argument_types()
+
+    args = ",".join(map(rustify_type, args))
     ret = rustify_type(node.get_result().get_canonical())
 
     return "extern fn (%s) -> %s" % (args, ret)
@@ -88,7 +95,7 @@ def rustify_type(node):
         res = rustify_pointer(node)
     elif canonical_kind is clang_types.RECORD:
         res = re.sub('^struct ', '', re.sub('^const ', '', canonical.spelling))
-    elif canonical_kind == clang_types.FUNCTIONPROTO:
+    elif canonical_kind in [clang_types.FUNCTIONPROTO, clang_types.FUNCTIONNOPROTO]:
         res = rustify_function_prototype(node)
     elif canonical_kind == clang_types.INCOMPLETEARRAY:
         #return 'libc::c_int /* INCOMPLETEARRAY */'
